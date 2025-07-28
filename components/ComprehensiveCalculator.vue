@@ -34,6 +34,93 @@
       </div>
     </div>
 
+    <!-- レベル選択 -->
+    <div v-if="selectedCharacter" class="mb-6">
+      <h3 class="text-xl font-medium text-amber-100 mb-3">レベル選択</h3>
+      <div class="bg-gray-700 border border-amber-600/30 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-base text-gray-200">レベル: {{ selectedLevel }}</span>
+          <div class="flex gap-2">
+            <button
+              @click="changeLevel(-1)"
+              :disabled="selectedLevel <= 1"
+              :class="[
+                'px-3 py-1 text-sm rounded border transition-colors',
+                selectedLevel <= 1
+                  ? 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : 'border-amber-600 bg-amber-700 text-white hover:bg-amber-600'
+              ]"
+            >
+              -1
+            </button>
+            <button
+              @click="changeLevel(1)"
+              :disabled="selectedLevel >= 15"
+              :class="[
+                'px-3 py-1 text-sm rounded border transition-colors',
+                selectedLevel >= 15
+                  ? 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : 'border-amber-600 bg-amber-700 text-white hover:bg-amber-600'
+              ]"
+            >
+              +1
+            </button>
+          </div>
+        </div>
+        
+        <!-- レベルスライダー -->
+        <div class="mb-3">
+          <input
+            v-model.number="selectedLevel"
+            type="range"
+            min="1"
+            max="15"
+            class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+          />
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>Lv.1</span>
+            <span>Lv.15</span>
+          </div>
+        </div>
+        
+        <!-- レベル別ステータス表示 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">生命力</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.vitality }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">精神力</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.mind }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">持久力</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.endurance }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">筋力</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.strength }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">技量</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.dexterity }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">知力</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.intelligence }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">信仰</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.faith }}</div>
+          </div>
+          <div class="bg-gray-600 rounded p-2">
+            <div class="text-gray-300">神秘</div>
+            <div class="font-medium text-gray-100">{{ currentLevelStats.arcane }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 遺物効果選択 -->
     <div v-if="selectedCharacter" class="mb-6">
       <h3 class="text-xl font-medium text-amber-100 mb-3">遺物効果選択</h3>
@@ -312,10 +399,12 @@
 
 <script setup>
 import {
-  COMPREHENSIVE_EFFECTS,
   getEffectsByCategory,
-  getAllEffects,
 } from "~/data/comprehensive-effects";
+import {
+  getCharacterStatsAtLevel,
+  getAvailableLevels
+} from "~/data/level-stats";
 
 // デフォルトキャラクターデータ
 const defaultCharacters = [
@@ -442,33 +531,30 @@ const selectedCharacter = ref(null);
 const availableCharacters = ref(defaultCharacters);
 const appliedEffects = ref([]);
 const activeCategory = ref("ability_boost");
+const selectedLevel = ref(1);
 
 // フィルタされた効果
 const filteredEffects = computed(() => {
   return getEffectsByCategory(activeCategory.value);
 });
 
-// 基本ステータス
-const baseVitality = computed(
-  () => selectedCharacter.value?.baseStats.vitality || 0
-);
-const baseMind = computed(() => selectedCharacter.value?.baseStats.mind || 0);
-const baseEndurance = computed(
-  () => selectedCharacter.value?.baseStats.endurance || 0
-);
-const baseStrength = computed(
-  () => selectedCharacter.value?.baseStats.strength || 0
-);
-const baseDexterity = computed(
-  () => selectedCharacter.value?.baseStats.dexterity || 0
-);
-const baseIntelligence = computed(
-  () => selectedCharacter.value?.baseStats.intelligence || 0
-);
-const baseFaith = computed(() => selectedCharacter.value?.baseStats.faith || 0);
-const baseArcane = computed(
-  () => selectedCharacter.value?.baseStats.arcane || 0
-);
+// 現在のレベルステータス
+const currentLevelStats = computed(() => {
+  if (!selectedCharacter.value) {
+    return { vitality: 0, mind: 0, endurance: 0, strength: 0, dexterity: 0, intelligence: 0, faith: 0, arcane: 0 }
+  }
+  return getCharacterStatsAtLevel(selectedCharacter.value.name, selectedLevel.value) || selectedCharacter.value.baseStats
+});
+
+// 基本ステータス（レベルベース）
+const baseVitality = computed(() => currentLevelStats.value.vitality);
+const baseMind = computed(() => currentLevelStats.value.mind);
+const baseEndurance = computed(() => currentLevelStats.value.endurance);
+const baseStrength = computed(() => currentLevelStats.value.strength);
+const baseDexterity = computed(() => currentLevelStats.value.dexterity);
+const baseIntelligence = computed(() => currentLevelStats.value.intelligence);
+const baseFaith = computed(() => currentLevelStats.value.faith);
+const baseArcane = computed(() => currentLevelStats.value.arcane);
 
 const baseHP = computed(() => 100 + baseVitality.value * 20);
 const baseFP = computed(() => 50 + baseMind.value * 5);
@@ -549,12 +635,21 @@ const holyAttackMultiplier = computed(() => getAttackMultiplier("holy_attack"));
 // アクション
 const selectCharacter = (character) => {
   selectedCharacter.value = character;
+  selectedLevel.value = 1; // レベルをリセット
   appliedEffects.value = [];
 };
 
 const resetSelection = () => {
   selectedCharacter.value = null;
+  selectedLevel.value = 1;
   appliedEffects.value = [];
+};
+
+const changeLevel = (delta) => {
+  const newLevel = selectedLevel.value + delta;
+  if (newLevel >= 1 && newLevel <= 15) {
+    selectedLevel.value = newLevel;
+  }
 };
 
 const canAddEffect = (effect) => {
@@ -596,3 +691,35 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+/* レンジスライダーのカスタムスタイル */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #d97706;
+  cursor: pointer;
+  border: 2px solid #f59e0b;
+}
+
+.slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #d97706;
+  cursor: pointer;
+  border: 2px solid #f59e0b;
+}
+
+.slider::-webkit-slider-track {
+  background: #4b5563;
+  border-radius: 5px;
+}
+
+.slider::-moz-range-track {
+  background: #4b5563;
+  border-radius: 5px;
+}
+</style>
