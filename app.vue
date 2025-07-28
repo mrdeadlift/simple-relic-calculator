@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen bg-gray-900">
     <NuxtRouteAnnouncer />
     
     <!-- ヘッダー -->
-    <header class="bg-white shadow-sm border-b">
+    <header class="bg-gray-800 shadow-lg border-b border-amber-600/30">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-6">
-          <h1 class="text-3xl font-bold text-gray-900">
+          <h1 class="text-4xl font-bold text-amber-100">
             ELDEN RING Nightreign 遺物計算機
           </h1>
         </div>
