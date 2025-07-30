@@ -121,6 +121,27 @@
       </div>
     </div>
 
+    <!-- 武器選択 -->
+    <div v-if="selectedCharacter" class="mb-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 武器選択 -->
+        <WeaponSelector
+          v-model="selectedWeapon"
+          :character-name="selectedCharacter.name"
+          :character-stats="currentLevelStats"
+        />
+
+        <!-- 武器ステータス -->
+        <WeaponStats
+          :weapon="selectedWeapon"
+          :character-name="selectedCharacter.name"
+          :character-stats="currentLevelStats"
+          :relic-effects="selectedEffects"
+          :show-debug="false"
+        />
+      </div>
+    </div>
+
     <!-- 遺物効果選択 -->
     <div v-if="selectedCharacter" class="mb-6">
       <h3 class="text-xl font-medium text-amber-100 mb-3">遺物効果選択</h3>
@@ -392,6 +413,31 @@
             </div>
           </div>
         </div>
+
+        <!-- 武器攻撃力 -->
+        <div v-if="selectedWeapon" class="bg-gray-700 border border-amber-600/50 rounded-lg p-3">
+          <h4 class="text-base font-medium text-amber-300 mb-2">武器攻撃力</h4>
+          <div class="space-y-1 text-sm text-gray-200">
+            <div class="flex justify-between">
+              <span>武器名:</span>
+              <span class="font-medium text-amber-200">{{ selectedWeapon.name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>基本攻撃力:</span>
+              <span class="font-medium">{{ selectedWeapon.attackPower.total }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>種別:</span>
+              <span class="font-medium">{{ selectedWeapon.type }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>レアリティ:</span>
+              <span class="font-medium" :class="getWeaponRarityColor(selectedWeapon.rarity)">
+                {{ selectedWeapon.rarity }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -405,6 +451,8 @@ import {
   getCharacterStatsAtLevel,
   getAvailableLevels
 } from "~/data/level-stats";
+import WeaponSelector from "./WeaponSelector.vue";
+import WeaponStats from "./WeaponStats.vue";
 
 // デフォルトキャラクターデータ
 const defaultCharacters = [
@@ -532,10 +580,16 @@ const availableCharacters = ref(defaultCharacters);
 const appliedEffects = ref([]);
 const activeCategory = ref("ability_boost");
 const selectedLevel = ref(1);
+const selectedWeapon = ref(null);
 
 // フィルタされた効果
 const filteredEffects = computed(() => {
   return getEffectsByCategory(activeCategory.value);
+});
+
+// 遺物効果のマッピング（WeaponStatsコンポーネント用）
+const selectedEffects = computed(() => {
+  return appliedEffects.value;
 });
 
 // 現在のレベルステータス
@@ -637,12 +691,14 @@ const selectCharacter = (character) => {
   selectedCharacter.value = character;
   selectedLevel.value = 1; // レベルをリセット
   appliedEffects.value = [];
+  selectedWeapon.value = null; // 武器もリセット
 };
 
 const resetSelection = () => {
   selectedCharacter.value = null;
   selectedLevel.value = 1;
   appliedEffects.value = [];
+  selectedWeapon.value = null;
 };
 
 const changeLevel = (delta) => {
@@ -672,6 +728,17 @@ const removeEffect = (appliedId) => {
   appliedEffects.value = appliedEffects.value.filter(
     (effect) => effect.appliedId !== appliedId
   );
+};
+
+// 武器レアリティの色を取得
+const getWeaponRarityColor = (rarity) => {
+  const colors = {
+    'コモン': 'text-gray-300',
+    'アンコモン': 'text-green-300',
+    'レア': 'text-blue-300',
+    'レジェンド': 'text-purple-300'
+  };
+  return colors[rarity] || 'text-gray-300';
 };
 
 const clearEffects = () => {

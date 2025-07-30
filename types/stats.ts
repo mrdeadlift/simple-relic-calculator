@@ -13,6 +13,8 @@ export interface StatModifier {
   value: number
   /** 修正の源泉（効果名） */
   source: string
+  /** 修正の源泉タイプ */
+  sourceType?: 'relic' | 'weapon' | 'character' | 'upgrade'
   /** 条件（条件付き効果の場合） */
   condition?: string
 }
@@ -36,6 +38,12 @@ export interface StatModifiers {
   fireAttack: StatModifier[]
   lightningAttack: StatModifier[]
   holyAttack: StatModifier[]
+  // 武器関連の修正値
+  weaponPhysicalAttack: StatModifier[]
+  weaponMagicAttack: StatModifier[]
+  weaponFireAttack: StatModifier[]
+  weaponLightningAttack: StatModifier[]
+  weaponHolyAttack: StatModifier[]
 }
 
 // 攻撃力の型
@@ -88,6 +96,10 @@ export interface StatusResistances {
 export interface FinalStats extends CalculatedStats {
   /** 攻撃力 */
   attackPower: AttackPower
+  /** 武器攻撃力（装備武器がある場合） */
+  weaponAttackPower?: AttackPower
+  /** 総合攻撃力（基本攻撃力 + 武器攻撃力） */
+  totalAttackPower: AttackPower
   /** カット率 */
   cutRates: CutRates
   /** 状態異常耐性 */
@@ -104,6 +116,8 @@ export interface CalculationDetails {
   baseStats: BaseStats
   /** 遺物効果による修正 */
   relicModifiers: StatModifiers
+  /** 武器効果による修正（装備武器がある場合） */
+  weaponModifiers?: StatModifiers
   /** 最終結果 */
   finalStats: FinalStats
   /** 計算過程のログ */

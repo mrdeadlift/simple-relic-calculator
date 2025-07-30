@@ -35,3 +35,31 @@ export type {
   CalculationDetails,
   EffectApplicationResult
 } from './stats'
+
+// 武器関連
+export type {
+  WeaponType,
+  WeaponRarity,
+  StatScaling,
+  StatusEffect,
+  WeaponStatusEffect,
+  WeaponScaling,
+  WeaponAttackPower,
+  WeaponRequirements,
+  WeaponSkill,
+  WeaponUpgrade,
+  Weapon,
+  WeaponCategory,
+  EquippedWeapon,
+  WeaponAttackResult,
+  WeaponFilter,
+  WeaponSortBy,
+  WeaponSortOptions
+} from './weapon'
+
+// 武器関連の定数
+export {
+  SCALING_VALUES,
+  RARITY_VALUES,
+  WEAPON_CATEGORIES
+} from './weapon'
