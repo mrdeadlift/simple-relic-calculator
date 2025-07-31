@@ -137,9 +137,19 @@
           :character-name="selectedCharacter.name"
           :character-stats="currentLevelStats"
           :relic-effects="selectedEffects"
-          :show-debug="false"
+          :show-debug="debugMode"
         />
       </div>
+    </div>
+
+    <!-- 武器比較 -->
+    <div v-if="selectedCharacter" class="mb-6">
+      <WeaponComparison
+        :character-name="selectedCharacter.name"
+        :character-stats="currentLevelStats"
+        :relic-effects="selectedEffects"
+        :max-slots="4"
+      />
     </div>
 
     <!-- 遺物効果選択 -->
@@ -218,6 +228,67 @@
         >
           全てクリア
         </button>
+      </div>
+    </div>
+
+    <!-- デバッグコントロール -->
+    <div class="mb-6 flex items-center justify-between bg-gray-900 rounded-lg p-4 border border-gray-700">
+      <div class="flex items-center space-x-4">
+        <button
+          @click="toggleDebugMode"
+          :class="[
+            'px-3 py-2 rounded text-sm font-medium transition-colors',
+            debugMode
+              ? 'bg-amber-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          ]"
+        >
+          デバッグモード: {{ debugMode ? 'ON' : 'OFF' }}
+        </button>
+        
+        <button
+          v-if="debugMode"
+          @click="exportDebugData"
+          class="px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-500 transition-colors"
+        >
+          デバッグデータエクスポート
+        </button>
+        
+        <button
+          v-if="debugMode && systemErrors.length > 0"
+          @click="clearSystemErrors"
+          class="px-3 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-500 transition-colors"
+        >
+          エラーログクリア ({{ systemErrors.length }})
+        </button>
+      </div>
+      
+      <div class="text-sm text-gray-400">
+        武器データ: {{ WEAPONS?.length || 0 }}種類 | 
+        遺物効果: {{ appliedEffects.length }}個適用中
+      </div>
+    </div>
+
+    <!-- エラー表示 -->
+    <div v-if="debugMode && systemErrors.length > 0" class="mb-6">
+      <div class="bg-red-900/20 border border-red-600/30 rounded-lg p-4">
+        <h4 class="text-lg font-medium text-red-300 mb-3">システムエラー</h4>
+        <div class="space-y-2 max-h-32 overflow-y-auto">
+          <div
+            v-for="error in systemErrors"
+            :key="error.id"
+            class="bg-red-800/20 border border-red-600/20 rounded p-3 text-sm"
+          >
+            <div class="flex justify-between items-start mb-1">
+              <span class="font-medium text-red-200">{{ error.message }}</span>
+              <span class="text-xs text-red-400">{{ error.timestamp }}</span>
+            </div>
+            <details class="text-xs text-gray-400">
+              <summary class="cursor-pointer hover:text-gray-300">スタックトレース</summary>
+              <pre class="mt-2 text-xs overflow-x-auto">{{ error.stack }}</pre>
+            </details>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -453,6 +524,8 @@ import {
 } from "~/data/level-stats";
 import WeaponSelector from "./WeaponSelector.vue";
 import WeaponStats from "./WeaponStats.vue";
+import WeaponComparison from "./WeaponComparison.vue";
+import { WEAPONS } from "~/data/weapons";
 
 // デフォルトキャラクターデータ
 const defaultCharacters = [
@@ -581,6 +654,8 @@ const appliedEffects = ref([]);
 const activeCategory = ref("ability_boost");
 const selectedLevel = ref(1);
 const selectedWeapon = ref(null);
+const debugMode = ref(false);
+const systemErrors = ref([]);
 
 // フィルタされた効果
 const filteredEffects = computed(() => {
@@ -716,12 +791,16 @@ const canAddEffect = (effect) => {
 };
 
 const addEffect = (effect) => {
-  if (!canAddEffect(effect)) return;
+  try {
+    if (!canAddEffect(effect)) return;
 
-  appliedEffects.value.push({
-    ...effect,
-    appliedId: `${effect.id}_${Date.now()}`, // 適用時のユニークID
-  });
+    appliedEffects.value.push({
+      ...effect,
+      appliedId: `${effect.id}_${Date.now()}`, // 適用時のユニークID
+    });
+  } catch (error) {
+    addSystemError(error);
+  }
 };
 
 const removeEffect = (appliedId) => {
@@ -743,6 +822,61 @@ const getWeaponRarityColor = (rarity) => {
 
 const clearEffects = () => {
   appliedEffects.value = [];
+};
+
+// デバッグ機能
+const toggleDebugMode = () => {
+  debugMode.value = !debugMode.value;
+};
+
+const addSystemError = (error) => {
+  const errorInfo = {
+    id: Date.now(),
+    message: error.message || 'Unknown error',
+    timestamp: new Date().toLocaleString(),
+    stack: error.stack || 'No stack trace available'
+  };
+  systemErrors.value.push(errorInfo);
+  console.error('System Error:', errorInfo);
+};
+
+const clearSystemErrors = () => {
+  systemErrors.value = [];
+};
+
+const exportDebugData = () => {
+  const debugData = {
+    character: selectedCharacter.value,
+    level: selectedLevel.value,
+    weapon: selectedWeapon.value,
+    effects: appliedEffects.value,
+    stats: {
+      base: currentLevelStats.value,
+      final: {
+        vitality: finalVitality.value,
+        mind: finalMind.value,
+        endurance: finalEndurance.value,
+        strength: finalStrength.value,
+        dexterity: finalDexterity.value,
+        intelligence: finalIntelligence.value,
+        faith: finalFaith.value,
+        arcane: finalArcane.value
+      }
+    },
+    errors: systemErrors.value,
+    timestamp: new Date().toISOString()
+  };
+  
+  const dataStr = JSON.stringify(debugData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `debug-data-${Date.now()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 // 初期化時に実際のキャラクターデータの読み込みを試行
