@@ -745,6 +745,501 @@ export const WEAPONS: Weapon[] = [
       隠者: 3,
       執行者: 5
     }
+  },
+
+  // 追加武器群 - より多様な選択肢を提供
+
+  // 短剣系武器
+  {
+    id: 'shadow_dagger',
+    name: '影の短剣',
+    type: '短剣',
+    rarity: 'アンコモン',
+    attackPower: {
+      physical: 98,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 98
+    },
+    scaling: {
+      strength: 'D',
+      dexterity: 'A',
+      intelligence: '-',
+      faith: '-',
+      arcane: 'B'
+    },
+    requirements: {
+      strength: 8,
+      dexterity: 15,
+      intelligence: 0,
+      faith: 0,
+      arcane: 12
+    },
+    statusEffects: [
+      { type: '出血', buildup: 50 }
+    ],
+    description: '影に紛れる暗殺者が愛用する軽量な短剣。出血効果を持つ。',
+    obtainMethod: '特定エリアの宝箱',
+    weight: 2.5,
+    specialEffect: '背後からの攻撃時にダメージ1.5倍',
+    characterCompatibility: {
+      追跡者: 3,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 2,
+      無頼漢: 2,
+      復讐者: 2,
+      隠者: 3,
+      執行者: 4
+    }
+  },
+
+  // 直剣系武器
+  {
+    id: 'knight_straight_sword',
+    name: '騎士の直剣',
+    type: '直剣',
+    rarity: 'コモン',
+    attackPower: {
+      physical: 118,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 118
+    },
+    scaling: {
+      strength: 'B',
+      dexterity: 'B',
+      intelligence: '-',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 12,
+      dexterity: 12,
+      intelligence: 0,
+      faith: 0,
+      arcane: 0
+    },
+    skill: {
+      name: '騎士の誇り',
+      fpCost: 8,
+      description: '一定時間攻撃力が上昇する'
+    },
+    description: '伝統的な騎士が使用する汎用性の高い直剣。',
+    obtainMethod: '商人から購入',
+    weight: 5.5,
+    characterCompatibility: {
+      追跡者: 4,
+      守護者: 5,
+      鉄の目: 3,
+      レディ: 3,
+      無頼漢: 3,
+      復讐者: 3,
+      隠者: 2,
+      執行者: 3
+    }
+  },
+
+  // 刺剣系武器
+  {
+    id: 'rapier_of_mist',
+    name: '霧の刺剣',
+    type: '刺剣',
+    rarity: 'レア',
+    attackPower: {
+      physical: 125,
+      magic: 35,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 160
+    },
+    scaling: {
+      strength: 'D',
+      dexterity: 'A',
+      intelligence: 'B',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 8,
+      dexterity: 18,
+      intelligence: 14,
+      faith: 0,
+      arcane: 0
+    },
+    skill: {
+      name: '霧隠れ',
+      fpCost: 15,
+      description: '一瞬姿を消し、次の攻撃の命中率と威力が上昇'
+    },
+    description: '魔力を帯びた優雅な刺剣。技量と知力の両方を活かす。',
+    obtainMethod: '隠しボス討伐',
+    weight: 4.0,
+    specialEffect: 'クリティカル時に魔力ダメージ追加',
+    characterCompatibility: {
+      追跡者: 2,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 4,
+      無頼漢: 1,
+      復讐者: 3,
+      隠者: 4,
+      執行者: 3
+    }
+  },
+
+  // 斧系武器
+  {
+    id: 'berserker_axe',
+    name: '狂戦士の斧',
+    type: '斧',
+    rarity: 'アンコモン',
+    attackPower: {
+      physical: 156,
+      fire: 20,
+      magic: 0,
+      lightning: 0,
+      holy: 0,
+      total: 176
+    },
+    scaling: {
+      strength: 'A',
+      dexterity: 'C',
+      intelligence: '-',
+      faith: '-',
+      arcane: 'C'
+    },
+    requirements: {
+      strength: 22,
+      dexterity: 8,
+      intelligence: 0,
+      faith: 0,
+      arcane: 10
+    },
+    statusEffects: [
+      { type: '出血', buildup: 40 }
+    ],
+    skill: {
+      name: '狂乱の一撃',
+      fpCost: 10,
+      description: 'HPが減るほど威力が上昇する強力な一撃'
+    },
+    description: '血に飢えた戦士が愛用する残忍な斧。使用者を狂乱に導く。',
+    obtainMethod: '狂戦士討伐',
+    weight: 8.5,
+    specialEffect: 'HPが50%以下で攻撃力20%上昇',
+    characterCompatibility: {
+      追跡者: 3,
+      守護者: 2,
+      鉄の目: 2,
+      レディ: 1,
+      無頼漢: 5,
+      復讐者: 2,
+      隠者: 1,
+      執行者: 4
+    }
+  },
+
+  // 槍系武器
+  {
+    id: 'crystal_spear',
+    name: '水晶の槍',
+    type: '槍',
+    rarity: 'レア',
+    attackPower: {
+      physical: 110,
+      magic: 65,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 175
+    },
+    scaling: {
+      strength: 'C',
+      dexterity: 'B',
+      intelligence: 'A',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 14,
+      dexterity: 16,
+      intelligence: 20,
+      faith: 0,
+      arcane: 0
+    },
+    skill: {
+      name: '水晶の嵐',
+      fpCost: 18,
+      description: '前方に魔力の弾を連続発射する'
+    },
+    description: '水晶で形成された美しい槍。魔力を増幅する効果を持つ。',
+    obtainMethod: '水晶洞窟の深部',
+    weight: 6.5,
+    specialEffect: '魔術使用時のFP消費量10%軽減',
+    characterCompatibility: {
+      追跡者: 2,
+      守護者: 3,
+      鉄の目: 4,
+      レディ: 5,
+      無頼漢: 1,
+      復讐者: 4,
+      隠者: 5,
+      執行者: 2
+    }
+  },
+
+  // 弓系武器
+  {
+    id: 'hunter_longbow',
+    name: '狩人の長弓',
+    type: '弓',
+    rarity: 'アンコモン',
+    attackPower: {
+      physical: 142,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 142
+    },
+    scaling: {
+      strength: 'D',
+      dexterity: 'A',
+      intelligence: '-',
+      faith: '-',
+      arcane: 'C'
+    },
+    requirements: {
+      strength: 10,
+      dexterity: 20,
+      intelligence: 0,
+      faith: 0,
+      arcane: 8
+    },
+    skill: {
+      name: '狙撃射撃',
+      fpCost: 12,
+      description: '長距離の敵を高精度で狙撃する'
+    },
+    description: '熟練の狩人が使用する高精度の長弓。遠距離戦に特化。',
+    obtainMethod: '狩人の集落',
+    weight: 3.5,
+    specialEffect: '距離が遠いほどダメージ増加',
+    characterCompatibility: {
+      追跡者: 3,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 3,
+      無頼漢: 2,
+      復讐者: 2,
+      隠者: 3,
+      執行者: 4
+    }
+  },
+
+  // 杖系武器
+  {
+    id: 'scholars_staff',
+    name: '学者の杖',
+    type: '杖',
+    rarity: 'コモン',
+    attackPower: {
+      physical: 45,
+      magic: 95,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 140
+    },
+    scaling: {
+      strength: '-',
+      dexterity: '-',
+      intelligence: 'A',
+      faith: 'D',
+      arcane: 'C'
+    },
+    requirements: {
+      strength: 6,
+      dexterity: 8,
+      intelligence: 16,
+      faith: 0,
+      arcane: 0
+    },
+    skill: {
+      name: '知識の光',
+      fpCost: 14,
+      description: '魔術の威力を一定時間上昇させる'
+    },
+    description: '学究に励む者が使用する基本的な杖。魔術の威力を高める。',
+    obtainMethod: '魔術学院',
+    weight: 2.0,
+    specialEffect: '魔術の詠唱速度15%向上',
+    characterCompatibility: {
+      追跡者: 1,
+      守護者: 1,
+      鉄の目: 3,
+      レディ: 5,
+      無頼漢: 1,
+      復讐者: 4,
+      隠者: 5,
+      執行者: 2
+    }
+  },
+
+  // 聖印系武器
+  {
+    id: 'divine_seal',
+    name: '神聖印',
+    type: '聖印',
+    rarity: 'レア',
+    attackPower: {
+      physical: 40,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 110,
+      total: 150
+    },
+    scaling: {
+      strength: '-',
+      dexterity: '-',
+      intelligence: 'D',
+      faith: 'S',
+      arcane: 'B'
+    },
+    requirements: {
+      strength: 4,
+      dexterity: 6,
+      intelligence: 0,
+      faith: 22,
+      arcane: 8
+    },
+    skill: {
+      name: '神の加護',
+      fpCost: 20,
+      description: '一定時間、受けるダメージを軽減し、HPを徐々に回復'
+    },
+    description: '神に仕える者が持つ最高位の聖印。強力な祈祷を可能にする。',
+    obtainMethod: '神殿の最深部',
+    weight: 1.5,
+    specialEffect: '祈祷の回復量25%増加',
+    characterCompatibility: {
+      追跡者: 1,
+      守護者: 2,
+      鉄の目: 1,
+      レディ: 3,
+      無頼漢: 1,
+      復讐者: 5,
+      隠者: 5,
+      執行者: 2
+    }
+  },
+
+  // 特大剣系武器
+  {
+    id: 'colossal_blade',
+    name: '巨人の大剣',
+    type: '特大剣',
+    rarity: 'レジェンド',
+    attackPower: {
+      physical: 210,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 210
+    },
+    scaling: {
+      strength: 'S',
+      dexterity: 'D',
+      intelligence: '-',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 35,
+      dexterity: 10,
+      intelligence: 0,
+      faith: 0,
+      arcane: 0
+    },
+    skill: {
+      name: '大地割り',
+      fpCost: 25,
+      description: '地面を叩き割り、広範囲の敵にダメージを与える'
+    },
+    description: '巨人族が使用していた伝説の大剣。圧倒的な破壊力を誇る。',
+    obtainMethod: '巨人王討伐',
+    weight: 18.0,
+    specialEffect: '両手持ち時、攻撃が建物や障害物を破壊可能',
+    characterCompatibility: {
+      追跡者: 3,
+      守護者: 4,
+      鉄の目: 1,
+      レディ: 1,
+      無頼漢: 5,
+      復讐者: 2,
+      隠者: 1,
+      執行者: 2
+    }
+  },
+
+  // 拳系武器
+  {
+    id: 'iron_fist',
+    name: '鉄拳',
+    type: '拳',
+    rarity: 'アンコモン',
+    attackPower: {
+      physical: 134,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 134
+    },
+    scaling: {
+      strength: 'B',
+      dexterity: 'A',
+      intelligence: '-',
+      faith: '-',
+      arcane: 'C'
+    },
+    requirements: {
+      strength: 16,
+      dexterity: 18,
+      intelligence: 0,
+      faith: 0,
+      arcane: 12
+    },
+    statusEffects: [
+      { type: '出血', buildup: 60 }
+    ],
+    skill: {
+      name: '連続打撃',
+      fpCost: 8,
+      description: '素早い連続攻撃でコンボを繋げる'
+    },
+    description: '格闘家が愛用する重量感のある拳武器。連続攻撃に優れる。',
+    obtainMethod: '格闘道場',
+    weight: 4.5,
+    specialEffect: '連続ヒット時にダメージボーナス',
+    characterCompatibility: {
+      追跡者: 3,
+      守護者: 3,
+      鉄の目: 4,
+      レディ: 2,
+      無頼漢: 4,
+      復讐者: 2,
+      隠者: 2,
+      執行者: 5
+    }
   }
 ]
 
