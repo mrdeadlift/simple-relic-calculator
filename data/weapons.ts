@@ -195,16 +195,16 @@ export const WEAPONS: Weapon[] = [
     type: '弓',
     rarity: 'コモン',
     attackPower: {
-      physical: 85,
+      physical: 45,
       magic: 0,
       fire: 0,
       lightning: 0,
       holy: 0,
-      total: 85
+      total: 45
     },
     scaling: {
-      strength: 'D',
-      dexterity: 'A',
+      strength: 'E',
+      dexterity: 'S',
       intelligence: '-',
       faith: '-',
       arcane: '-'
@@ -218,6 +218,129 @@ export const WEAPONS: Weapon[] = [
     },
     description: '鉄の目が使用する精密射撃用の弓。技量補正に優れる。',
     obtainMethod: '初期装備',
+    weight: 3.5,
+    characterCompatibility: {
+      追跡者: 2,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 3,
+      無頼漢: 1,
+      復讐者: 2,
+      隠者: 2,
+      執行者: 4
+    }
+  },
+  {
+    id: 'iron_eye_bow_uncommon',
+    name: '鉄の目の弓 +',
+    type: '弓',
+    rarity: 'アンコモン',
+    attackPower: {
+      physical: 45,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 45
+    },
+    scaling: {
+      strength: 'E',
+      dexterity: 'S',
+      intelligence: '-',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 8,
+      dexterity: 14,
+      intelligence: 0,
+      faith: 0,
+      arcane: 0
+    },
+    description: '鉄の目の弓の強化版。アンコモン品質で攻撃力が向上。',
+    obtainMethod: '強化素材でアップグレード',
+    weight: 3.5,
+    characterCompatibility: {
+      追跡者: 2,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 3,
+      無頼漢: 1,
+      復讐者: 2,
+      隠者: 2,
+      執行者: 4
+    }
+  },
+  {
+    id: 'iron_eye_bow_rare',
+    name: '鉄の目の弓 ++',
+    type: '弓',
+    rarity: 'レア',
+    attackPower: {
+      physical: 45,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 45
+    },
+    scaling: {
+      strength: 'E',
+      dexterity: 'S',
+      intelligence: '-',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 8,
+      dexterity: 14,
+      intelligence: 0,
+      faith: 0,
+      arcane: 0
+    },
+    description: '鉄の目の弓の高品質版。レア品質で大幅な攻撃力向上。',
+    obtainMethod: '稀少素材でアップグレード',
+    weight: 3.5,
+    characterCompatibility: {
+      追跡者: 2,
+      守護者: 2,
+      鉄の目: 5,
+      レディ: 3,
+      無頼漢: 1,
+      復讐者: 2,
+      隠者: 2,
+      執行者: 4
+    }
+  },
+  {
+    id: 'iron_eye_bow_legendary',
+    name: '鉄の目の弓 +++',
+    type: '弓',
+    rarity: 'レジェンド',
+    attackPower: {
+      physical: 45,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0,
+      total: 45
+    },
+    scaling: {
+      strength: 'E',
+      dexterity: 'S',
+      intelligence: '-',
+      faith: '-',
+      arcane: '-'
+    },
+    requirements: {
+      strength: 8,
+      dexterity: 14,
+      intelligence: 0,
+      faith: 0,
+      arcane: 0
+    },
+    description: '鉄の目の弓の最高版。レジェンド品質で究極の攻撃力。',
+    obtainMethod: '伝説素材でアップグレード',
     weight: 3.5,
     characterCompatibility: {
       追跡者: 2,

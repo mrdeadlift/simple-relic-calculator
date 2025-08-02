@@ -8,9 +8,7 @@ import type {
   WeaponAttackResult, 
   WeaponUpgrade, 
   StatScaling, 
-  SCALING_VALUES,
   WeaponAttackPower,
-  StatModifiers,
   RelicEffect
 } from '~/types'
 import type { BaseStats } from '~/types/character'
@@ -28,6 +26,17 @@ const SCALING_MULTIPLIERS: Record<StatScaling, number> = {
   'D': 0.2,   // 最低補正
   'E': 0.1,   // 微補正
   '-': 0.0    // 補正なし
+}
+
+/**
+ * レアリティによる基本攻撃力倍率
+ * doc/weapons/弓.mdの検証データに基づく
+ */
+const RARITY_MULTIPLIERS: Record<string, number> = {
+  'コモン': 1.0,      // 基準
+  'アンコモン': 1.57,  // +57%
+  'レア': 1.85,       // +85%
+  'レジェンド': 2.19    // +119%
 }
 
 /**
@@ -170,17 +179,25 @@ function calculateAttributeBonus(baseValue: number, modifiers: any[]): number {
 
 /**
  * 武器の基本攻撃力計算
+ * レアリティと強化レベルの両方を考慮
  */
 function calculateBaseAttackPower(weapon: Weapon, upgrade: WeaponUpgrade): WeaponAttackPower {
+  // レアリティによる基本攻撃力倍率
+  const rarityMultiplier = RARITY_MULTIPLIERS[weapon.rarity] || 1.0
+  
+  // 強化レベルによる倍率
   const upgradeMultiplier = getUpgradeMultiplier(upgrade.level, upgrade.maxLevel)
   
+  // 総合倍率 = レアリティ倍率 × 強化倍率
+  const totalMultiplier = rarityMultiplier * upgradeMultiplier
+  
   return {
-    physical: Math.floor(weapon.attackPower.physical * upgradeMultiplier),
-    magic: Math.floor(weapon.attackPower.magic * upgradeMultiplier),
-    fire: Math.floor(weapon.attackPower.fire * upgradeMultiplier),
-    lightning: Math.floor(weapon.attackPower.lightning * upgradeMultiplier),
-    holy: Math.floor(weapon.attackPower.holy * upgradeMultiplier),
-    total: Math.floor(weapon.attackPower.total * upgradeMultiplier)
+    physical: Math.floor(weapon.attackPower.physical * totalMultiplier),
+    magic: Math.floor(weapon.attackPower.magic * totalMultiplier),
+    fire: Math.floor(weapon.attackPower.fire * totalMultiplier),
+    lightning: Math.floor(weapon.attackPower.lightning * totalMultiplier),
+    holy: Math.floor(weapon.attackPower.holy * totalMultiplier),
+    total: Math.floor(weapon.attackPower.total * totalMultiplier)
   }
 }
 
@@ -400,11 +417,14 @@ export function getWeaponCalculationLog(
 ): string[] {
   const log: string[] = []
   const result = calculateWeaponAttackPower(weapon, characterStats, upgrade, twoHanded, relicEffects)
+  const rarityMultiplier = RARITY_MULTIPLIERS[weapon.rarity] || 1.0
+  const upgradeMultiplier = getUpgradeMultiplier(upgrade.level, upgrade.maxLevel)
   
   log.push(`=== ${weapon.name} 攻撃力計算 ===`)
   log.push(`武器種別: ${weapon.type}`)
-  log.push(`レアリティ: ${weapon.rarity}`)
-  log.push(`強化レベル: +${upgrade.level}`)
+  log.push(`レアリティ: ${weapon.rarity} (倍率: ${rarityMultiplier}x)`)
+  log.push(`強化レベル: +${upgrade.level} (倍率: ${upgradeMultiplier}x)`)
+  log.push(`総合倍率: ${rarityMultiplier * upgradeMultiplier}x`)
   log.push(`両手持ち: ${twoHanded ? 'はい' : 'いいえ'}`)
   log.push('')
   
