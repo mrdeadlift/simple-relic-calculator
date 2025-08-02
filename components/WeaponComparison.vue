@@ -54,14 +54,19 @@
           <div v-else class="space-y-2">
             <div class="flex items-center justify-between">
               <h5 class="font-medium text-amber-100">{{ slot.weapon.name }}</h5>
-              <span
-                :class="[
-                  'px-2 py-1 rounded text-xs font-medium',
-                  getRarityColor(slot.weapon.rarity)
-                ]"
-              >
-                {{ slot.weapon.rarity }}
-              </span>
+              <div class="flex items-center space-x-1">
+                <span
+                  :class="[
+                    'px-2 py-1 rounded text-xs font-medium',
+                    getRarityColor(slot.weapon.rarity)
+                  ]"
+                >
+                  {{ slot.weapon.rarity }}
+                </span>
+                <span v-if="getCurrentRarity(slot.weapon, slot.upgradeLevel) !== slot.weapon.rarity" class="text-xs text-gray-400">
+                  →{{ getCurrentRarity(slot.weapon, slot.upgradeLevel) }}
+                </span>
+              </div>
             </div>
             <div class="text-sm text-gray-300">{{ slot.weapon.type }}</div>
             <div class="text-sm text-gray-400">攻撃力: {{ slot.result.finalAttack.total }}</div>
@@ -75,7 +80,7 @@
                 v-model.number="slot.upgradeLevel"
                 type="range"
                 min="0"
-                max="25"
+                :max="getMaxUpgradeLevel(slot.weapon)"
                 class="w-full"
                 @input="updateComparison"
               />
@@ -263,6 +268,7 @@ import { ref, computed, watch } from 'vue'
 import type { Weapon, WeaponAttackResult, WeaponUpgrade, RelicEffect } from '~/types'
 import type { BaseStats } from '~/types/character'
 import { WEAPONS } from '~/data/weapons'
+import { MAX_UPGRADE_LEVELS, getUpgradedRarity } from '~/types/weapon'
 import { 
   calculateWeaponAttackPower, 
   createDefaultWeaponUpgrade,
@@ -358,6 +364,15 @@ function isWeaponSelected(weaponId: string): boolean {
   return comparisonSlots.value.some(slot => slot.weapon?.id === weaponId)
 }
 
+function getMaxUpgradeLevel(weapon: Weapon | null): number {
+  if (!weapon) return 3
+  return MAX_UPGRADE_LEVELS[weapon.rarity] || 3
+}
+
+function getCurrentRarity(weapon: Weapon, upgradeLevel: number): string {
+  return getUpgradedRarity(weapon.rarity, upgradeLevel)
+}
+
 function updateSlotResult(slotIndex: number) {
   const slot = comparisonSlots.value[slotIndex]
   if (!slot.weapon) {
@@ -365,7 +380,13 @@ function updateSlotResult(slotIndex: number) {
     return
   }
 
-  const upgrade = createDefaultWeaponUpgrade(slot.upgradeLevel)
+  // 強化レベルが最大値を超えている場合は調整
+  const maxLevel = getMaxUpgradeLevel(slot.weapon)
+  if (slot.upgradeLevel > maxLevel) {
+    slot.upgradeLevel = maxLevel
+  }
+
+  const upgrade = createDefaultWeaponUpgrade(slot.upgradeLevel, slot.weapon.rarity)
   slot.result = calculateWeaponAttackPower(
     slot.weapon,
     props.characterStats,

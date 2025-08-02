@@ -9,9 +9,11 @@ import type {
   WeaponUpgrade, 
   StatScaling, 
   WeaponAttackPower,
-  RelicEffect
+  RelicEffect,
+  WeaponRarity
 } from '~/types'
 import type { BaseStats } from '~/types/character'
+import { MAX_UPGRADE_LEVELS, getUpgradedRarity } from '~/types/weapon'
 import { applyMultipleEffects } from './relic-calculator'
 
 /**
@@ -41,26 +43,36 @@ const RARITY_MULTIPLIERS: Record<string, number> = {
 
 /**
  * 武器強化レベルによる攻撃力倍率
- * 強化レベル0-25での倍率曲線
+ * レアリティ別最大強化回数に応じた攻撃力向上
+ * 各レアリティに基づく攻撃力倍率を使用
  */
-function getUpgradeMultiplier(level: number, maxLevel: number = 25): number {
+function getUpgradeMultiplier(level: number, baseRarity: WeaponRarity, maxLevel?: number): number {
   if (level <= 0) return 1.0
-  if (level >= maxLevel) return 2.0
   
-  // 強化倍率の計算（レベル25で2.0倍）
-  return 1.0 + (level / maxLevel) * 1.0
+  const actualMaxLevel = maxLevel || MAX_UPGRADE_LEVELS[baseRarity]
+  if (level >= actualMaxLevel) {
+    level = actualMaxLevel
+  }
+  
+  // レアリティ別攻撃力倍率を使用
+  const currentRarity = getUpgradedRarity(baseRarity, level)
+  return RARITY_MULTIPLIERS[currentRarity] || 1.0
 }
 
 /**
  * 武器強化レベルによる補正値倍率
  * 能力補正も強化レベルで向上する
  */
-function getScalingUpgradeMultiplier(level: number, maxLevel: number = 25): number {
+function getScalingUpgradeMultiplier(level: number, baseRarity: WeaponRarity, maxLevel?: number): number {
   if (level <= 0) return 1.0
-  if (level >= maxLevel) return 1.5
   
-  // 補正値倍率の計算（レベル25で1.5倍）
-  return 1.0 + (level / maxLevel) * 0.5
+  const actualMaxLevel = maxLevel || MAX_UPGRADE_LEVELS[baseRarity]
+  if (level >= actualMaxLevel) {
+    level = actualMaxLevel
+  }
+  
+  // 強化レベルに応じた補正値向上
+  return 1.0 + (level / Math.max(actualMaxLevel, 1)) * 0.5
 }
 
 /**
@@ -70,13 +82,14 @@ function getScalingUpgradeMultiplier(level: number, maxLevel: number = 25): numb
 function calculateScalingBonus(
   statValue: number,
   scalingRank: StatScaling,
-  upgradeLevel: number = 0
+  upgradeLevel: number = 0,
+  baseRarity: WeaponRarity = 'コモン'
 ): number {
   const baseMultiplier = SCALING_MULTIPLIERS[scalingRank]
   if (baseMultiplier === 0) return 0
   
   // 強化レベルによる補正値向上
-  const upgradeMultiplier = getScalingUpgradeMultiplier(upgradeLevel)
+  const upgradeMultiplier = getScalingUpgradeMultiplier(upgradeLevel, baseRarity)
   
   // 能力値による補正値計算
   // エルデンリングの補正値計算式を参考
@@ -179,26 +192,28 @@ function calculateAttributeBonus(baseValue: number, modifiers: any[]): number {
 
 /**
  * 武器の基本攻撃力計算
- * レアリティと強化レベルの両方を考慮
+ * 強化後のレアリティに基づいた攻撃力計算
  */
 function calculateBaseAttackPower(weapon: Weapon, upgrade: WeaponUpgrade): WeaponAttackPower {
-  // レアリティによる基本攻撃力倍率
-  const rarityMultiplier = RARITY_MULTIPLIERS[weapon.rarity] || 1.0
-  
-  // 強化レベルによる倍率
-  const upgradeMultiplier = getUpgradeMultiplier(upgrade.level, upgrade.maxLevel)
-  
-  // 総合倍率 = レアリティ倍率 × 強化倍率
-  const totalMultiplier = rarityMultiplier * upgradeMultiplier
+  // 強化後のレアリティによる攻撃力倍率を使用
+  const upgradedMultiplier = upgrade.attackMultiplier
   
   return {
-    physical: Math.floor(weapon.attackPower.physical * totalMultiplier),
-    magic: Math.floor(weapon.attackPower.magic * totalMultiplier),
-    fire: Math.floor(weapon.attackPower.fire * totalMultiplier),
-    lightning: Math.floor(weapon.attackPower.lightning * totalMultiplier),
-    holy: Math.floor(weapon.attackPower.holy * totalMultiplier),
-    total: Math.floor(weapon.attackPower.total * totalMultiplier)
+    physical: Math.floor(weapon.attackPower.physical * upgradedMultiplier),
+    magic: Math.floor(weapon.attackPower.magic * upgradedMultiplier),
+    fire: Math.floor(weapon.attackPower.fire * upgradedMultiplier),
+    lightning: Math.floor(weapon.attackPower.lightning * upgradedMultiplier),
+    holy: Math.floor(weapon.attackPower.holy * upgradedMultiplier),
+    total: Math.floor(weapon.attackPower.total * upgradedMultiplier)
   }
+}
+
+/**
+ * 武器の基本レアリティを取得（強化前のレアリティ）
+ */
+function getBaseRarity(weapon: Weapon, upgrade: WeaponUpgrade): WeaponRarity {
+  // upgradeに元レアリティ情報がない場合は武器のレアリティを使用
+  return weapon.rarity
 }
 
 /**
@@ -213,12 +228,13 @@ function calculateScalingAttackPower(
   // 両手持ち時の筋力補正（1.5倍）
   const effectiveStrength = twoHanded ? Math.floor(characterStats.strength * 1.5) : characterStats.strength
   
-  // 各能力値による補正値計算
-  const strengthBonus = calculateScalingBonus(effectiveStrength, weapon.scaling.strength, upgrade.level)
-  const dexterityBonus = calculateScalingBonus(characterStats.dexterity, weapon.scaling.dexterity, upgrade.level)
-  const intelligenceBonus = calculateScalingBonus(characterStats.intelligence, weapon.scaling.intelligence, upgrade.level)
-  const faithBonus = calculateScalingBonus(characterStats.faith, weapon.scaling.faith, upgrade.level)
-  const arcaneBonus = calculateScalingBonus(characterStats.arcane, weapon.scaling.arcane, upgrade.level)
+  // 各能力値による補正値計算（武器の元レアリティを使用）
+  const baseRarity = getBaseRarity(weapon, upgrade)
+  const strengthBonus = calculateScalingBonus(effectiveStrength, weapon.scaling.strength, upgrade.level, baseRarity)
+  const dexterityBonus = calculateScalingBonus(characterStats.dexterity, weapon.scaling.dexterity, upgrade.level, baseRarity)
+  const intelligenceBonus = calculateScalingBonus(characterStats.intelligence, weapon.scaling.intelligence, upgrade.level, baseRarity)
+  const faithBonus = calculateScalingBonus(characterStats.faith, weapon.scaling.faith, upgrade.level, baseRarity)
+  const arcaneBonus = calculateScalingBonus(characterStats.arcane, weapon.scaling.arcane, upgrade.level, baseRarity)
   
   // 物理攻撃力は主に筋力・技量で決まる
   const physicalBonus = strengthBonus + dexterityBonus
@@ -248,15 +264,18 @@ function calculateScalingAttackPower(
 export function calculateWeaponAttackPower(
   weapon: Weapon,
   characterStats: BaseStats,
-  upgrade: WeaponUpgrade = { level: 0, maxLevel: 25, attackMultiplier: 1.0, scalingMultiplier: 1.0 },
+  upgrade?: WeaponUpgrade,
   twoHanded: boolean = false,
   relicEffects: RelicEffect[] = []
 ): WeaponAttackResult {
+  // upgradeが指定されていない場合はデフォルトを作成
+  const actualUpgrade = upgrade || createDefaultWeaponUpgrade(0, weapon.rarity)
+  
   // 基本攻撃力計算
-  const baseAttack = calculateBaseAttackPower(weapon, upgrade)
+  const baseAttack = calculateBaseAttackPower(weapon, actualUpgrade)
   
   // 能力補正による追加攻撃力計算
-  const scalingBonus = calculateScalingAttackPower(weapon, characterStats, upgrade, twoHanded)
+  const scalingBonus = calculateScalingAttackPower(weapon, characterStats, actualUpgrade, twoHanded)
   
   // 強化による追加攻撃力（基本攻撃力の増加分）
   const upgradeBonus: WeaponAttackPower = {
@@ -345,12 +364,17 @@ export function getWeaponRequirementStatus(weapon: Weapon, characterStats: BaseS
 /**
  * 武器強化のデフォルト設定を生成
  */
-export function createDefaultWeaponUpgrade(level: number = 0): WeaponUpgrade {
+export function createDefaultWeaponUpgrade(level: number = 0, baseRarity: WeaponRarity = 'コモン'): WeaponUpgrade {
+  const maxLevel = MAX_UPGRADE_LEVELS[baseRarity]
+  const clampedLevel = Math.max(0, Math.min(maxLevel, level))
+  const currentRarity = getUpgradedRarity(baseRarity, clampedLevel)
+  
   return {
-    level: Math.max(0, Math.min(25, level)),
-    maxLevel: 25,
-    attackMultiplier: getUpgradeMultiplier(level),
-    scalingMultiplier: getScalingUpgradeMultiplier(level)
+    level: clampedLevel,
+    maxLevel,
+    attackMultiplier: getUpgradeMultiplier(clampedLevel, baseRarity, maxLevel),
+    scalingMultiplier: getScalingUpgradeMultiplier(clampedLevel, baseRarity, maxLevel),
+    currentRarity
   }
 }
 
@@ -364,13 +388,14 @@ export function compareWeaponAttackPower(
   twoHanded: boolean = false,
   relicEffects: RelicEffect[] = []
 ): Array<{weapon: Weapon, result: WeaponAttackResult, equipable: boolean}> {
-  const upgrade = createDefaultWeaponUpgrade(upgradeLevel)
-  
-  return weapons.map(weapon => ({
-    weapon,
-    result: calculateWeaponAttackPower(weapon, characterStats, upgrade, twoHanded, relicEffects),
-    equipable: canEquipWeapon(weapon, characterStats)
-  })).sort((a, b) => b.result.finalAttack.total - a.result.finalAttack.total)
+  return weapons.map(weapon => {
+    const upgrade = createDefaultWeaponUpgrade(upgradeLevel, weapon.rarity)
+    return {
+      weapon,
+      result: calculateWeaponAttackPower(weapon, characterStats, upgrade, twoHanded, relicEffects),
+      equipable: canEquipWeapon(weapon, characterStats)
+    }
+  }).sort((a, b) => b.result.finalAttack.total - a.result.finalAttack.total)
 }
 
 /**
@@ -384,7 +409,7 @@ export function calculateWeaponScore(
   relicEffects: RelicEffect[] = []
 ): number {
   const compatibility = weapon.characterCompatibility[characterName as keyof typeof weapon.characterCompatibility] || 1
-  const upgrade = createDefaultWeaponUpgrade(upgradeLevel)
+  const upgrade = createDefaultWeaponUpgrade(upgradeLevel, weapon.rarity)
   const result = calculateWeaponAttackPower(weapon, characterStats, upgrade, false, relicEffects)
   const equipable = canEquipWeapon(weapon, characterStats)
   
@@ -418,7 +443,7 @@ export function getWeaponCalculationLog(
   const log: string[] = []
   const result = calculateWeaponAttackPower(weapon, characterStats, upgrade, twoHanded, relicEffects)
   const rarityMultiplier = RARITY_MULTIPLIERS[weapon.rarity] || 1.0
-  const upgradeMultiplier = getUpgradeMultiplier(upgrade.level, upgrade.maxLevel)
+  const upgradeMultiplier = getUpgradeMultiplier(upgrade.level, weapon.rarity, upgrade.maxLevel)
   
   log.push(`=== ${weapon.name} 攻撃力計算 ===`)
   log.push(`武器種別: ${weapon.type}`)
@@ -481,7 +506,7 @@ export function getWeaponWithRelicEffects(
   compatibilityScore: number
   effectiveAttackPower: number
 } {
-  const upgrade = createDefaultWeaponUpgrade(upgradeLevel)
+  const upgrade = createDefaultWeaponUpgrade(upgradeLevel, weapon.rarity)
   const result = calculateWeaponAttackPower(weapon, characterStats, upgrade, twoHanded, relicEffects)
   const equipable = canEquipWeapon(weapon, characterStats)
   

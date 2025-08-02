@@ -129,14 +129,16 @@ export interface WeaponSkill {
  * 武器強化情報
  */
 export interface WeaponUpgrade {
-  /** 現在の強化レベル (0-25) */
+  /** 現在の強化レベル */
   level: number
-  /** 最大強化レベル */
+  /** 最大強化レベル（元レアリティ依存） */
   maxLevel: number
   /** 強化による攻撃力倍率 */
   attackMultiplier: number
   /** 強化による補正値倍率 */
   scalingMultiplier: number
+  /** 現在のレアリティ（強化で変化する） */
+  currentRarity: WeaponRarity
 }
 
 /**
@@ -294,6 +296,41 @@ export const RARITY_VALUES: Record<WeaponRarity, number> = {
   'アンコモン': 1,
   'レア': 2,
   'レジェンド': 3
+}
+
+/**
+ * レアリティ別の最大強化レベル
+ * 元のレアリティから上位レアリティへの強化回数
+ * コモン: 3回（→アンコモン→レア→レジェンド）
+ * アンコモン: 2回（→レア→レジェンド）
+ * レア: 1回（→レジェンド）
+ * レジェンド: 0回（最高レアリティのため強化不可）
+ */
+export const MAX_UPGRADE_LEVELS: Record<WeaponRarity, number> = {
+  'コモン': 3,
+  'アンコモン': 2,
+  'レア': 1,
+  'レジェンド': 0
+}
+
+/**
+ * 強化レベルに対応するレアリティ取得
+ */
+export function getUpgradedRarity(baseRarity: WeaponRarity, upgradeLevel: number): WeaponRarity {
+  const rarities: WeaponRarity[] = ['コモン', 'アンコモン', 'レア', 'レジェンド']
+  const baseIndex = rarities.indexOf(baseRarity)
+  const targetIndex = Math.min(baseIndex + upgradeLevel, rarities.length - 1)
+  return rarities[targetIndex]
+}
+
+/**
+ * レアリティ間の強化段階数を取得
+ */
+export function getUpgradeSteps(fromRarity: WeaponRarity, toRarity: WeaponRarity): number {
+  const rarities: WeaponRarity[] = ['コモン', 'アンコモン', 'レア', 'レジェンド']
+  const fromIndex = rarities.indexOf(fromRarity)
+  const toIndex = rarities.indexOf(toRarity)
+  return Math.max(0, toIndex - fromIndex)
 }
 
 /**

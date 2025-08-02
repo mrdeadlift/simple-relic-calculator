@@ -24,14 +24,28 @@
             <h4 class="text-lg font-medium text-amber-100">{{ weapon.name }}</h4>
             <div class="flex items-center mt-1 space-x-3">
               <span class="text-sm text-gray-300">{{ weapon.type }}</span>
-              <span
-                :class="[
-                  'px-2 py-1 rounded text-xs font-medium',
-                  getRarityColor(weapon.rarity)
-                ]"
-              >
-                {{ weapon.rarity }}
-              </span>
+              <div class="flex items-center space-x-2">
+                <span
+                  :class="[
+                    'px-2 py-1 rounded text-xs font-medium',
+                    getRarityColor(weapon.rarity)
+                  ]"
+                >
+                  {{ weapon.rarity }}
+                </span>
+                <span v-if="upgrade.currentRarity !== weapon.rarity" class="text-xs text-gray-400">
+                  →
+                </span>
+                <span
+                  v-if="upgrade.currentRarity !== weapon.rarity"
+                  :class="[
+                    'px-2 py-1 rounded text-xs font-medium',
+                    getRarityColor(upgrade.currentRarity)
+                  ]"
+                >
+                  {{ upgrade.currentRarity }}
+                </span>
+              </div>
             </div>
           </div>
           <div class="text-right">
@@ -49,17 +63,20 @@
           <div>
             <label class="block text-sm text-gray-300 mb-1">
               強化レベル: +{{ upgradeLevel }}
+              <span v-if="upgrade.currentRarity !== weapon.rarity" class="text-xs text-amber-300 ml-2">
+                ({{ upgrade.currentRarity }})
+              </span>
             </label>
             <input
               v-model.number="upgradeLevel"
               type="range"
               min="0"
-              max="25"
+              :max="maxUpgradeLevel"
               class="w-full"
             />
             <div class="flex justify-between text-xs text-gray-400 mt-1">
               <span>+0</span>
-              <span>+25</span>
+              <span>+{{ maxUpgradeLevel }}</span>
             </div>
           </div>
           
@@ -290,6 +307,7 @@
 import { ref, computed, watch } from 'vue'
 import type { Weapon, WeaponUpgrade, RelicEffect } from '~/types'
 import type { BaseStats } from '~/types/character'
+import { MAX_UPGRADE_LEVELS } from '~/types/weapon'
 import { 
   calculateWeaponAttackPower, 
   createDefaultWeaponUpgrade,
@@ -316,9 +334,15 @@ const upgradeLevel = ref(0)
 const twoHanded = ref(false)
 
 // Computed values
-const upgrade = computed((): WeaponUpgrade => 
-  createDefaultWeaponUpgrade(upgradeLevel.value)
-)
+const maxUpgradeLevel = computed(() => {
+  if (!props.weapon) return 3
+  return MAX_UPGRADE_LEVELS[props.weapon.rarity] || 3
+})
+
+const upgrade = computed((): WeaponUpgrade => {
+  if (!props.weapon) return createDefaultWeaponUpgrade(0)
+  return createDefaultWeaponUpgrade(upgradeLevel.value, props.weapon.rarity)
+})
 
 const attackResult = computed(() => {
   if (!props.weapon) {
@@ -420,8 +444,23 @@ function getEffectiveStatValue(stat: string): number {
 }
 
 // 武器変更時に設定をリセット
-watch(() => props.weapon, () => {
+watch(() => props.weapon, (newWeapon) => {
   upgradeLevel.value = 0
   twoHanded.value = false
+  
+  // 新しい武器の最大強化レベルを超えている場合は調整
+  if (newWeapon && upgradeLevel.value > MAX_UPGRADE_LEVELS[newWeapon.rarity]) {
+    upgradeLevel.value = MAX_UPGRADE_LEVELS[newWeapon.rarity]
+  }
 }, { immediate: true })
+
+// 強化レベルが最大値を超えないよう監視
+watch([upgradeLevel, () => props.weapon?.rarity], ([level, rarity]) => {
+  if (rarity && typeof level === 'number') {
+    const maxLevel = MAX_UPGRADE_LEVELS[rarity]
+    if (level > maxLevel) {
+      upgradeLevel.value = maxLevel
+    }
+  }
+})
 </script>
