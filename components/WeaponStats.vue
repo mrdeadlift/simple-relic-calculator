@@ -380,13 +380,26 @@ const debugLog = computed(() => {
 
 // Helper functions
 function getAttributeAttackPowers() {
+  if (!props.weapon) {
+    return {
+      physical: 0,
+      magic: 0,
+      fire: 0,
+      lightning: 0,
+      holy: 0
+    }
+  }
+  
   const result = attackResult.value.finalAttack
+  
+  // 武器に元々その属性攻撃力が設定されていない場合は0を表示
+  // これにより属性攻撃力を持たない武器で不正な値が表示されることを防ぐ
   return {
     physical: result.physical,
-    magic: result.magic,
-    fire: result.fire,
-    lightning: result.lightning,
-    holy: result.holy
+    magic: props.weapon.attackPower.magic > 0 ? result.magic : 0,
+    fire: props.weapon.attackPower.fire > 0 ? result.fire : 0,
+    lightning: props.weapon.attackPower.lightning > 0 ? result.lightning : 0,
+    holy: props.weapon.attackPower.holy > 0 ? result.holy : 0
   }
 }
 
