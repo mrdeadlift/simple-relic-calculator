@@ -10,3 +10,5 @@ Thumbs.db
 .idea/
 **/*:Zone.Identifier
 .claude
+.mcp*
+.serena
