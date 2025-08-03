@@ -1,14 +1,20 @@
 node_modules
-doc/*
 .nuxt/
 .output/
 dist/
 .env
 .DS_Store
 Thumbs.db
-.vscode/
 .idea/
 **/*:Zone.Identifier
+
+# 作業用データディレクトリ
+doc/*
+
+# ローカルAI Agent用設定
 .claude
 .mcp*
 .serena
+
+# バックアップファイル
+*backup*
