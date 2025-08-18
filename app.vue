@@ -20,7 +20,53 @@
   </div>
 </template>
 
-<script setup>
-// コンポーネントの明示的なインポート
-import ComprehensiveCalculator from '~/components/ComprehensiveCalculator.vue'
+<script setup lang="ts">
+// SEO とパフォーマンスの設定
+useHead({
+  title: 'ELDEN RING Nightreign 遺物計算機',
+  meta: [
+    { name: 'description', content: 'ELDEN RING Nightreignの遺物とキャラクターを組み合わせたビルド計算機' },
+    { name: 'keywords', content: 'ELDEN RING, Nightreign, 遺物, 計算機, ビルド' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    { name: 'theme-color', content: '#1f2937' }
+  ],
+  link: [
+    { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+  ]
+})
+
+// パフォーマンス監視
+import { performanceMonitor } from '~/utils/performance'
+
+onMounted(() => {
+  performanceMonitor.mark('app-mounted')
+  
+  // アプリ起動時のパフォーマンス測定
+  nextTick(() => {
+    performanceMonitor.measure('initial-render', 'app-mounted')
+  })
+})
+
+// レスポンシブ対応
+const { $viewport } = useNuxtApp()
+const isMobile = computed(() => {
+  if (process.client) {
+    return window.innerWidth < 768
+  }
+  return false
+})
+
+// ダークモード対応
+const isDark = ref(true) // デフォルトはダークモード
+
+// エラーハンドリング
+const handleError = (error: Error) => {
+  console.error('アプリケーションエラー:', error)
+  // TODO: エラー報告サービスとの連携
+}
+
+onErrorCaptured((error) => {
+  handleError(error)
+  return false
+})
 </script>

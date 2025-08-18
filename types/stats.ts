@@ -19,8 +19,21 @@ export interface StatModifier {
   condition?: string
 }
 
-// 各ステータスに適用される修正値の集合
+// 各ステータスに適用される修正値の集合（改善版）
 export interface StatModifiers {
+  // 基本能力値
+  vitality: number
+  mind: number
+  endurance: number
+  strength: number
+  dexterity: number
+  intelligence: number
+  faith: number
+  arcane: number
+}
+
+// 詳細な修正値（デバッグ用）
+export interface DetailedStatModifiers {
   vitality: StatModifier[]
   mind: StatModifier[]
   endurance: StatModifier[]
@@ -48,6 +61,8 @@ export interface StatModifiers {
 
 // 攻撃力の型
 export interface AttackPower {
+  /** 合計攻撃力 */
+  total: number
   /** 物理攻撃力 */
   physical: number
   /** 魔力攻撃力 */
@@ -58,6 +73,10 @@ export interface AttackPower {
   lightning: number
   /** 聖攻撃力 */
   holy: number
+  /** クリティカル率 */
+  criticalRate: number
+  /** クリティカルダメージ */
+  criticalDamage: number
 }
 
 // カット率の型
