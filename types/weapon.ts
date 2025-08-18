@@ -206,6 +206,8 @@ export interface WeaponCategory {
  * 装備中の武器情報
  */
 export interface EquippedWeapon {
+  /** スロット番号 */
+  slot: number;
   /** 武器データ */
   weapon: Weapon;
   /** 強化情報 */
